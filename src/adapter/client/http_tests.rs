@@ -2,9 +2,7 @@
 mod tests{
 
     #[test]
-    fn foo(){
-
-        
+    fn make_http() {
 
     }
 
