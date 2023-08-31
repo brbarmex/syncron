@@ -1,6 +1,5 @@
 mod entities;
 mod service;
-mod adapter;
 
 fn main()  {
     let url = "https://exemplo.com"; // Substitua pelo URL desejado
