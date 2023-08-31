@@ -10,10 +10,9 @@ mod tests{
         //arrange
         let data: String = String::from("dummy");
         let version: String = String::from("sha:x723-456");
-        let hash: String = String::from("dummy");
 
         //action
-        let backup = Content::new(data, version, hash);
+        let backup = Content::new(data, version);
 
         //assert
         assert_eq!(backup.value, "dummy");
@@ -26,10 +25,9 @@ mod tests{
         //arrange
         let data: String = String::from("dummy");
         let version: String = String::from("sha:x723-456");
-        let hash: String = String::from("dummy");
 
         //action
-        let backup = Content::new(data, version, hash);
+        let backup = Content::new(data, version);
 
         //assert
         assert_eq!(backup.is_valid(), true);
@@ -41,10 +39,9 @@ mod tests{
         //arrange
         let data: String = Default::default();
         let version: String = Default::default();
-        let hash: String = Default::default();
 
         //action
-        let backup = Content::new(data, version, hash);
+        let backup = Content::new(data, version);
 
         //assert
         assert_eq!(backup.is_valid(), false);

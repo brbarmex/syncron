@@ -2,7 +2,7 @@ mod entities;
 mod service;
 
 fn main()  {
-    let url = "https://exemplo.com"; // Substitua pelo URL desejado
+    let _url = "https://exemplo.com"; // Substitua pelo URL desejado
 
     let url = String::from("");
     match service::snapshot::fetch_data(&url) {
