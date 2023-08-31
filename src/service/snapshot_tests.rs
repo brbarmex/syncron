@@ -1,14 +1,13 @@
-use mockito::{Server, ServerGuard};
-use super::*;
-
 #[cfg(test)]
 mod tests {
-    use crate::service;
 
+    use mockito::Server;
+    use crate::service::snapshot::fetch_data;
 
     #[test]
     fn it_must_fetch_data() {
         
+        // Arrange
         let json_str = r#"{
             "min_position": 3,
             "has_more_items": true,
@@ -30,9 +29,8 @@ mod tests {
             ]
         }"#;
 
-        //mock server
-        let mut server: mockito::ServerGuard = mockito::Server::new();
-        let mut url: String = server.url();
+        let mut server = Server::new();
+        let mut url = server.url();
         url.push_str("/content");
 
         server
@@ -41,9 +39,11 @@ mod tests {
             .with_body(json_str)
             .create();
 
-        let result = service::snapshot::fetch_data(&url);
+        // Action
+        let result = fetch_data(&url);
         assert!(result.is_ok(), "Was expected Ok result");
 
+        // Asserts
         let response = result.unwrap();
         assert_eq!(response.status().is_success(), true, "Expected status code 200")
 
