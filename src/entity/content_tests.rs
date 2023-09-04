@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests{
 
-    use crate::entities::content::Content;
+    use crate::entity::content::Content;
     
 
     #[test]
