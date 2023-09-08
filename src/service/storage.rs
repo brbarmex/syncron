@@ -1,61 +1,62 @@
-use std::{io, path::Path};
+use std::{io,io::Error, io::ErrorKind};
 use postgres::{Client, NoTls};
 
-use crate::service::snapshot::ContentIO;
-use super::snapshot::ContentStorage;
+use crate::entity::content::Content;
 
+pub trait Database {
+    fn put(&self, content: &Content, file: &String) -> Result<(), Error>;
+    fn latest(&self, id: &String) -> Result<Content, Error>;
+}
 
-pub struct FileIO {}
-impl ContentIO for FileIO {
-    fn read(&self, path: &Path) -> io::Result<Vec<u8>> {
-        let data = std::fs::read(path)?;
-        Ok(data)
-    }
+#[derive(Debug)]
+pub struct Postgres {}
 
-    fn write(&self, path: &Path, contents: &[u8]) -> io::Result<()> {
-        std::fs::write(path, contents)?;
-        Ok(())
+impl Postgres {
+    pub fn new() -> Postgres {
+        Postgres {  }
     }
 }
 
-pub struct PgService {}
-impl ContentStorage for PgService {
-    fn put_content(&self, content: &crate::entity::content::Content) -> Result<(), std::io::Error> {
+impl Database for Postgres {
+    fn put(&self, content: &Content, file: &String) -> Result<(), Error> {
        
         let mut client: Client = match Client::connect(
-            "postgresql://your_username:your_password@localhost/your_database",
+            "postgresql://rustdb:rustpwd@localhost/db_snapshot",
             NoTls,
         ) {
             Ok(c) => c,
-            Err(err) => return Err(io::Error::new(io::ErrorKind::NotConnected, err)),
+            Err(err) => return Err(Error::new(ErrorKind::NotConnected, err)),
         };
 
+        let query: &str = "INSERT INTO snapshots (content_value, version, file_id) VALUES ($1, $2, $3) \
+        ON CONFLICT (file_id) DO UPDATE SET content_value = EXCLUDED.content_value, \
+        version = EXCLUDED.version";
+
         match client.execute(
-            "INSERT INTO content (content_value, version) VALUES ($1, $2)",
-            &[&content.value, &content.version],
+            query,
+            &[&content.value, &content.version, &file],
         ) {
             Ok(_) => return Ok(()),
-            Err(err) => return Err(io::Error::new(io::ErrorKind::Other, err)),
+            Err(err) => return Err(io::Error::new(ErrorKind::Other, err)),
         };
     }
 
-    fn read_latest(&self) -> Result<crate::entity::content::Content, std::io::Error> {
+    fn latest(&self, id: &String) -> Result<Content, Error> {
        
         let mut client: Client = match Client::connect(
-            "postgresql://your_username:your_password@localhost/your_database",
+            "postgresql://rustdb:rustpwd@localhost/db_snapshot",
             NoTls,
         ) {
             Ok(c) => c,
-            Err(err) => return Err(io::Error::new(io::ErrorKind::NotConnected, err)),
+            Err(err) => return Err(Error::new(ErrorKind::NotConnected, err)),
         };
 
-        let row = match client.query_one("SELECT * FROM content ORDER BY id DESC LIMIT 1", &[]) {
+        let row = match client.query_one("SELECT * FROM snapshots WHERE file_id = $1", &[&id]) {
             Ok(row) => row,
-            Err(err) => return Err(io::Error::new(io::ErrorKind::NotConnected, err)),
+            Err(err) => return Err(Error::new(ErrorKind::NotConnected, err))
         };
 
-        // Parse the retrieved data into a Content struct
-        let content = crate::entity::content::Content{
+        let content= Content{
             value: row.get("content_value"),
             version: row.get("version"),
         };

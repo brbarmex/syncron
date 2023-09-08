@@ -2,11 +2,11 @@ version: '3'
 services:
   postgres:
     image: postgres:latest
-    container_name: my_postgres
+    container_name: database
     environment:
-      POSTGRES_USER: your_username
-      POSTGRES_PASSWORD: your_password
-      POSTGRES_DB: your_initial_db_name
+      POSTGRES_USER: rustdb
+      POSTGRES_PASSWORD: rustpwd
+      POSTGRES_DB: db_content_snapshot
     ports:
       - "5432:5432"
     volumes:
