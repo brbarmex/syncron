@@ -59,6 +59,29 @@ mod tests {
         assert!(result.is_ok());
     }
 
+    #[test]
+    fn backup_failure_when_file_read_failed() {
+
+        // Arrange
+        let file_io_mock = create_unsuccessful_file_io_mock();
+        let data_mock = create_successful_database_mock();
+        let path = "dummy".to_string();
+        let file = "dummy.txt".to_string();
+
+        // Act
+        let result = service::snapshot::perform_backup(&file_io_mock, &data_mock, path, &file);
+
+        // Assert
+        assert!(result.is_err());
+    }
+
+    fn create_unsuccessful_file_io_mock() -> FileMock {
+        FileMock {
+            read_mock: || Err(io::Error::new(io::ErrorKind::Other, "failed")),
+            write_mock: || Ok(()),
+        }
+    }
+
     fn create_successful_file_io_mock() -> FileMock {
         FileMock {
             read_mock: || Ok(vec![1, 2, 3]),
