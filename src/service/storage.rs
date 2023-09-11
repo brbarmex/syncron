@@ -9,19 +9,23 @@ pub trait Database {
 }
 
 #[derive(Debug)]
-pub struct Postgres {}
+pub struct Postgres<'a> {
+    str_connection: &'a str
+}
 
-impl Postgres {
-    pub fn new() -> Postgres {
-        Postgres {  }
+impl Postgres<'_> {
+    pub fn new(str_connection: &str) -> Postgres {
+        Postgres { 
+            str_connection
+         }
     }
 }
 
-impl Database for Postgres {
+impl Database for Postgres<'_> {
     fn put(&self, content: &Content, file: &String) -> Result<(), Error> {
        
         let mut client: Client = match Client::connect(
-            "postgresql://rustdb:rustpwd@localhost/db_snapshot",
+            self.str_connection,
             NoTls,
         ) {
             Ok(c) => c,
@@ -44,7 +48,7 @@ impl Database for Postgres {
     fn latest(&self, id: &String) -> Result<Content, Error> {
        
         let mut client: Client = match Client::connect(
-            "postgresql://rustdb:rustpwd@localhost/db_snapshot",
+            self.str_connection,
             NoTls,
         ) {
             Ok(c) => c,

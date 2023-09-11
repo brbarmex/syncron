@@ -1,7 +1,8 @@
 mod entity;
 mod service;
 mod cron;
+mod config;
 
 fn main()  {
-    cron::start();
+    cron::execute();
 }
