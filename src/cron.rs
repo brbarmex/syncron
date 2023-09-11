@@ -8,7 +8,7 @@ fn scheduled_function() {
     let file_io = service::file::File::new();
     let db_io = service::storage::Postgres::new(&config.db_str_connection);
     let path = String::from(&config.artefact_path);
-    let file_name = String::from(&config.artefact_path);
+    let file_name = String::from(&config.file_name);
     let sv = service::snapshot::perform_backup(&file_io, &db_io, path, &file_name);
 
     match sv {

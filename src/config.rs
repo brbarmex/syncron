@@ -17,7 +17,7 @@ impl EnvConfig {
     #[allow(dead_code)]
     pub fn load() -> Result<EnvConfig, Box<dyn std::error::Error>> {
 
-        let mut file = File::open("env.yaml")?;
+        let mut file = File::open("{YOUR_ASOLUTE_PATH}/syncron/src/env.yml")?;
         let mut yaml_content = String::new();
         file.read_to_string(&mut yaml_content)?;
     
