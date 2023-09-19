@@ -1,24 +1,26 @@
 use crate::entity::content::Content;
 use crate::service::{file::FileIO, storage::Database};
 use sha256::digest;
-use std::sync::Arc;
-use std::{io::ErrorKind, io::Error};
+use std::{io::Error, io::ErrorKind};
 
-#[warn(dead_code)]
-pub fn perform_backup(
-    file_io:  Arc<dyn FileIO>, 
-    database: Arc<dyn Database>, 
-    path: String,
-    file_name: &String) 
-    -> Result<(), std::io::Error> {
+pub struct Backup<'a> {
+    file: Box<&'a dyn FileIO>,
+    db: Box<&'a dyn Database>,
+}
 
-        let data = file_io
-        .read(path)
-        .unwrap_or(Vec::default());
+impl<'a> Backup<'a> {
+    
+    pub fn new(file: Box<&dyn FileIO>, db: Box<&dyn Database>) -> Self {
+        Backup {
+            file,
+            db
+        }
+    }
 
-        let data = String::from_utf8(data)
-        .unwrap_or(String::default());
-
+    pub fn perform_backup(&self, path: String, file_name: &String) -> Result<(), std::io::Error> {
+       
+        let data = self.file.read(path).unwrap_or(Vec::default());
+        let data = String::from_utf8(data).unwrap_or(String::default());
         if data.is_empty() {
             Error::new(ErrorKind::InvalidData, "the file not contain data");
         }
@@ -28,25 +30,25 @@ pub fn perform_backup(
             Error::new(ErrorKind::Other, "the content_data is invalid");
         }
 
-        let latest_content = database.latest(file_name)?;
+        let latest_content = self.db.latest(file_name)?;
         if latest_content.version != content.version {
-            database.put(&content, file_name)?;
+            self.db.put(&content, file_name)?;
         }
 
         Ok(())
+    }
 }
 
 
 #[cfg(test)]
 mod tests {
-    
-    use std::{io, path::Path};
-    use crate::service;
+
     use crate::entity::content::Content;
+    use crate::service;
+    use std::{io, path::Path};
 
     #[test]
     fn backup_successful_when_everything_succeeds() {
-
         // Arrange
         let file_io_mock = create_successful_file_io_mock();
         let data_mock = create_successful_database_mock();
@@ -62,7 +64,6 @@ mod tests {
 
     #[test]
     fn backup_failure_when_file_read_failed() {
-
         // Arrange
         let file_io_mock = create_unsuccessful_file_io_mock();
         let data_mock = create_successful_database_mock();
@@ -93,20 +94,22 @@ mod tests {
     fn create_successful_database_mock() -> DatabaseMock {
         DatabaseMock {
             put_mock: || Ok(()),
-            latest_mock: || Ok(Content {
-                value: "dummy".to_string(),
-                version: "dummy".to_string(),
-            }),
+            latest_mock: || {
+                Ok(Content {
+                    value: "dummy".to_string(),
+                    version: "dummy".to_string(),
+                })
+            },
         }
     }
 
     #[derive(Debug)]
     struct FileMock {
         read_mock: fn() -> io::Result<Vec<u8>>,
-        write_mock: fn() -> std::io::Result<()>
+        write_mock: fn() -> std::io::Result<()>,
     }
 
-    impl service::file::FileIO for FileMock  {
+    impl service::file::FileIO for FileMock {
         fn read(&self, _path: String) -> std::io::Result<Vec<u8>> {
             (self.read_mock)()
         }
@@ -115,15 +118,19 @@ mod tests {
             (self.write_mock)()
         }
     }
-    
+
     #[derive(Debug)]
     struct DatabaseMock {
-        put_mock: fn()-> Result<(), io::Error>,
-        latest_mock: fn()-> Result<Content, io::Error>
+        put_mock: fn() -> Result<(), io::Error>,
+        latest_mock: fn() -> Result<Content, io::Error>,
     }
 
     impl service::storage::Database for DatabaseMock {
-        fn put(&self, _content: &crate::entity::content::Content, _file: &String) -> Result<(), io::Error> {
+        fn put(
+            &self,
+            _content: &crate::entity::content::Content,
+            _file: &String,
+        ) -> Result<(), io::Error> {
             (self.put_mock)()
         }
 
