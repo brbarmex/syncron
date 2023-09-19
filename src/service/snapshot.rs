@@ -22,8 +22,7 @@ pub fn perform_backup(
             Error::new(ErrorKind::InvalidData, "the file not contain data");
         }
 
-        let version_check_sum = digest(&data);
-        let content: Content = Content::new(data, version_check_sum);
+        let content = Content::new(data, digest(&data));
         if !content.is_valid() {
             Error::new(ErrorKind::Other, "the content_data is invalid");
         }
