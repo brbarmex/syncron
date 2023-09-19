@@ -1,12 +1,13 @@
 use crate::entity::content::Content;
 use crate::service::{file::FileIO, storage::Database};
 use sha256::digest;
+use std::sync::Arc;
 use std::{io::ErrorKind, io::Error};
 
 #[warn(dead_code)]
 pub fn perform_backup(
-    file_io: &dyn FileIO, 
-    database: &dyn Database, 
+    file_io:  Arc<dyn FileIO>, 
+    database: Arc<dyn Database>, 
     path: String,
     file_name: &String) 
     -> Result<(), std::io::Error> {
