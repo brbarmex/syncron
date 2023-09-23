@@ -1,8 +1,9 @@
 mod entity;
 mod service;
-mod cron;
-mod config;
+mod daemon;
+mod repository;
 
 fn main()  {
-    cron::execute();
+    
+    //daemon::execute();
 }
