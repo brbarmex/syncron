@@ -1,7 +1,5 @@
 use std::{sync::{atomic::{AtomicBool, Ordering}, Arc}, thread, time::Duration};
 
-use crate::{service};
-
 pub trait DaemonJob {
     fn execute(&self);
 }

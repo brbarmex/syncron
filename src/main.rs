@@ -1,9 +1,11 @@
 mod entity;
-mod service;
+mod usecase;
 mod daemon;
 mod repository;
+mod bootstrap;
+mod iofile;
 
 fn main()  {
     
-    //daemon::execute();
+    bootstrap::start_up();
 }

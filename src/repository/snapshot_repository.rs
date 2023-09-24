@@ -14,6 +14,10 @@ pub struct Repository {
     pool: Pool<PostgresConnectionManager<NoTls>>,
 }
 
+pub fn new(pool: Pool<PostgresConnectionManager<NoTls>>) -> Repository {
+    Repository { pool }
+}
+
 impl Repository {
     pub fn new(pool: Pool<PostgresConnectionManager<NoTls>>) -> Self {
         Repository { pool }

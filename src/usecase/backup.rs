@@ -1,12 +1,13 @@
 use crate::daemon;
 use crate::entity::content::Content;
-use crate::service::{file::FileIO, storage::Database};
+use crate::repository::snapshot_repository;
 use sha256::digest;
 use std::{io::Error, io::ErrorKind};
+use crate::iofile::iofile;
 
 pub struct Backup{
-    file: Box<dyn FileIO>,
-    db: Box<dyn Database>,
+    file: Box<dyn iofile::FileIO>,
+    repository: Box<dyn snapshot_repository::SnapshotRepository>,
 }
 
 impl daemon::DaemonJob for Backup {
@@ -18,11 +19,11 @@ impl daemon::DaemonJob for Backup {
 impl Backup{
 
 
-    pub fn new(file: Box<dyn FileIO>, db: Box<dyn Database>) -> Self {
-        Backup { file, db }
+    pub fn new(file: Box<dyn iofile::FileIO>, db: Box<dyn snapshot_repository::SnapshotRepository>) -> Self {
+        Backup { file, repository: db }
     }
 
-    pub fn perform_backup(&self, path: String, file_name: &String) -> Result<(), std::io::Error> {
+    pub fn perform_copy(&self, path: String, file_name: &String) -> Result<(), std::io::Error> {
         let data = self.file.read(path).unwrap_or(Vec::default());
         let data = String::from_utf8(data).unwrap_or(String::default());
         if data.is_empty() {
@@ -35,9 +36,9 @@ impl Backup{
             return Err(Error::new(ErrorKind::Other, "the content_data is invalid"));
         }
 
-        let latest_content = self.db.latest(file_name)?;
+        let latest_content = self.repository.latest(file_name)?;
         if latest_content.version != content.version {
-            self.db.put(&content, file_name)?;
+            self.repository.put(&content, file_name)?;
         }
 
         Ok(())
@@ -47,8 +48,8 @@ impl Backup{
 #[cfg(test)]
 mod tests {
 
-    use crate::{entity::content::Content, service::snapshot::mock};
-    use crate::service;
+    use crate::{entity::content::Content, usecase::backup::mock};
+    use crate::usecase;
     use std::io;
 
     #[test]
@@ -74,8 +75,8 @@ mod tests {
         let file = String::from("fake");
 
         // Act
-        let service = service::snapshot::Backup::new(file_io_mock, database_mock);
-        let result = service.perform_backup(path, &file);
+        let service = usecase::backup::Backup::new(file_io_mock, database_mock);
+        let result = service.perform_copy(path, &file);
 
         // Assert
         assert!(result.is_err());
@@ -104,8 +105,8 @@ mod tests {
         let file = String::from("fake");
 
         // Act
-        let service = service::snapshot::Backup::new(file_io_mock, database_mock);
-        let result = service.perform_backup(path, &file);
+        let service = usecase::backup::Backup::new(file_io_mock, database_mock);
+        let result = service.perform_copy(path, &file);
 
         // Assert
         assert!(result.is_ok());
@@ -114,8 +115,9 @@ mod tests {
 
 pub(crate) mod mock {
 
-    use crate::entity::content::Content;
-    use crate::service;
+    use crate::{entity::content::Content, repository};
+    use crate::usecase;
+    use crate::iofile::iofile;
     use std::{io, path::Path};
 
     #[derive(Debug)]
@@ -124,7 +126,7 @@ pub(crate) mod mock {
         pub(crate) latest_mock: fn() -> Result<Content, io::Error>,
     }
 
-    impl service::storage::Database for DatabaseMock {
+    impl repository::snapshot_repository::SnapshotRepository for DatabaseMock {
         fn put(
             &self,
             _content: &crate::entity::content::Content,
@@ -144,7 +146,7 @@ pub(crate) mod mock {
         pub(crate) write_mock: fn() -> std::io::Result<()>,
     }
 
-    impl service::file::FileIO for FileMock {
+    impl iofile::FileIO for FileMock {
         fn read(&self, _path: String) -> std::io::Result<Vec<u8>> {
             (self.read_mock)()
         }

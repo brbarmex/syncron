@@ -6,17 +6,23 @@ pub trait FileIO {
 }
 
 #[derive(Debug)]
-pub struct File {}
+pub struct IoFile();
 
-impl File {
+impl IoFile {
 
     #[warn(dead_code)]
-    pub fn new() -> File{
-        File{}
+    pub fn new() -> Self{
+        IoFile()
     }
 }
 
-impl FileIO for File {
+impl Default for IoFile {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl FileIO for IoFile {
     fn read(&self, path: String) -> io::Result<Vec<u8>> {
         let path: PathBuf = PathBuf::from(path);
         let data: Vec<u8> = std::fs::read(path)?;
@@ -27,5 +33,9 @@ impl FileIO for File {
         std::fs::write(path, contents)?;
         Ok(())
     }
+}
+
+pub fn new() -> IoFile{
+    IoFile()
 }
 
