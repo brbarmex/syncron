@@ -1,3 +1,5 @@
+use std::env;
+
 mod bootstrap;
 mod daemon;
 mod entity;
@@ -6,5 +8,6 @@ mod repository;
 mod usecase;
 
 fn main() {
+    dotenv::dotenv().ok();
     bootstrap::start_up();
 }

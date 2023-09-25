@@ -1,10 +1,14 @@
+use std::env;
+
 use r2d2_postgres::{r2d2, PostgresConnectionManager};
 use tokio_postgres::NoTls;
 
 use crate::{daemon, iofile, repository, usecase};
 
 pub fn start_up() {
-    let config = "postgresql://rustdb:rustpwd@localhost/db_snapshot"
+
+    let str_conn = dotenv::var("PG_DB_STR_CONN").unwrap();
+    let config = str_conn
         .parse()
         .unwrap();
     let tls_connector = NoTls;
