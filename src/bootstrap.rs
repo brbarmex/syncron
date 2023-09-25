@@ -6,11 +6,8 @@ use tokio_postgres::NoTls;
 use crate::{daemon, iofile, repository, usecase};
 
 pub fn start_up() {
-
     let str_conn = dotenv::var("PG_DB_STR_CONN").unwrap();
-    let config = str_conn
-        .parse()
-        .unwrap();
+    let config = str_conn.parse().unwrap();
     let tls_connector = NoTls;
 
     let manager = PostgresConnectionManager::new(config, tls_connector);
