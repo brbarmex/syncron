@@ -1,11 +1,11 @@
 use crate::daemon;
 use crate::entity::content::Content;
+use crate::iofile::iofile;
 use crate::repository::snapshot_repository;
 use sha256::digest;
 use std::{io::Error, io::ErrorKind};
-use crate::iofile::iofile;
 
-pub struct Backup{
+pub struct Backup {
     file: Box<dyn iofile::FileIO>,
     repository: Box<dyn snapshot_repository::SnapshotRepository>,
 }
@@ -16,18 +16,25 @@ impl daemon::DaemonJob for Backup {
     }
 }
 
-impl Backup{
-
-
-    pub fn new(file: Box<dyn iofile::FileIO>, db: Box<dyn snapshot_repository::SnapshotRepository>) -> Self {
-        Backup { file, repository: db }
+impl Backup {
+    pub fn new(
+        file: Box<dyn iofile::FileIO>,
+        db: Box<dyn snapshot_repository::SnapshotRepository>,
+    ) -> Self {
+        Backup {
+            file,
+            repository: db,
+        }
     }
 
     pub fn perform_copy(&self, path: String, file_name: &String) -> Result<(), std::io::Error> {
         let data = self.file.read(path).unwrap_or(Vec::default());
         let data = String::from_utf8(data).unwrap_or(String::default());
         if data.is_empty() {
-           return Err(Error::new(ErrorKind::InvalidData, "the file not contain data"));
+            return Err(Error::new(
+                ErrorKind::InvalidData,
+                "the file not contain data",
+            ));
         }
 
         let checksum = digest(&data);
@@ -48,15 +55,14 @@ impl Backup{
 #[cfg(test)]
 mod tests {
 
-    use crate::{entity::content::Content, usecase::backup::mock};
     use crate::usecase;
+    use crate::{entity::content::Content, usecase::backup::mock};
     use std::io;
 
     #[test]
     fn backup_failure_when_file_read_failed() {
-
         // Arrange
-        let file_io_mock = Box::<mock::FileMock>::new(mock::FileMock{
+        let file_io_mock = Box::<mock::FileMock>::new(mock::FileMock {
             read_mock: || Err(io::Error::new(io::ErrorKind::InvalidData, "failed")),
             write_mock: || Ok(()),
         });
@@ -86,7 +92,7 @@ mod tests {
     #[test]
     fn backup_successful_when_everything_succeeds() {
         // Arrange
-        let file_io_mock = Box::<mock::FileMock>::new(mock::FileMock{
+        let file_io_mock = Box::<mock::FileMock>::new(mock::FileMock {
             read_mock: || Ok(vec![1, 2, 3]),
             write_mock: || Ok(()),
         });
@@ -115,9 +121,9 @@ mod tests {
 
 pub(crate) mod mock {
 
-    use crate::{entity::content::Content, repository};
-    use crate::usecase;
     use crate::iofile::iofile;
+    use crate::usecase;
+    use crate::{entity::content::Content, repository};
     use std::{io, path::Path};
 
     #[derive(Debug)]

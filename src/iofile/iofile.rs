@@ -9,9 +9,8 @@ pub trait FileIO {
 pub struct IoFile();
 
 impl IoFile {
-
     #[warn(dead_code)]
-    pub fn new() -> Self{
+    pub fn new() -> Self {
         IoFile()
     }
 }
@@ -35,7 +34,6 @@ impl FileIO for IoFile {
     }
 }
 
-pub fn new() -> IoFile{
+pub fn new() -> IoFile {
     IoFile()
 }
-

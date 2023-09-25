@@ -1,11 +1,10 @@
-mod entity;
-mod usecase;
-mod daemon;
-mod repository;
 mod bootstrap;
+mod daemon;
+mod entity;
 mod iofile;
+mod repository;
+mod usecase;
 
-fn main()  {
-    
+fn main() {
     bootstrap::start_up();
 }

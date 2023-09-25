@@ -5,32 +5,27 @@ pub struct Content {
 }
 
 impl Content {
-
     #[allow(dead_code)]
     pub fn is_valid(&self) -> bool {
         self.value.len() > 0 || self.version.len() > 0
     }
 
     #[allow(dead_code)]
-    pub fn new(content:String, version:String) -> Content {
-        Content{
+    pub fn new(content: String, version: String) -> Content {
+        Content {
             value: content,
             version,
         }
-    }  
+    }
 }
 
-
-
 #[cfg(test)]
-mod tests{
+mod tests {
 
     use crate::entity::content::Content;
-    
 
     #[test]
-    fn it_must_build_a_instance_of_the_backup(){
-
+    fn it_must_build_a_instance_of_the_backup() {
         //arrange
         let data: String = String::from("dummy");
         let version: String = String::from("sha:x723-456");
@@ -44,8 +39,7 @@ mod tests{
     }
 
     #[test]
-    fn it_must_be_a_valid_state(){
-        
+    fn it_must_be_a_valid_state() {
         //arrange
         let data: String = String::from("dummy");
         let version: String = String::from("sha:x723-456");
@@ -58,8 +52,7 @@ mod tests{
     }
 
     #[test]
-    fn it_must_be_a_invalid_state(){
-        
+    fn it_must_be_a_invalid_state() {
         //arrange
         let data: String = Default::default();
         let version: String = Default::default();
@@ -70,5 +63,4 @@ mod tests{
         //assert
         assert_eq!(backup.is_valid(), false);
     }
-
 }
